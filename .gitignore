@@ -1,0 +1,4 @@
+# .gitignore
+.zshrc.local
+*.backup.*
+.DS_Store
