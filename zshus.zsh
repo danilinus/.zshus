@@ -29,6 +29,16 @@ autoload -Uz down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 
+# ---------- Navigation ----------
+# Исправление навигации для Ctrl + Стрелки в Windows Terminal
+bindkey '^[[1;5C' forward-word     # Ctrl + Стрелка вправо
+bindkey '\e[5C' forward-word
+bindkey '^[[5C' forward-word
+
+bindkey '^[[1;5D' backward-word    # Ctrl + Стрелка влево
+bindkey '\e[5D' backward-word
+bindkey '^[[5D' backward-word
+
 # ---------- History file ----------
 
 HISTFILE="$HOME/.zsh_history"
