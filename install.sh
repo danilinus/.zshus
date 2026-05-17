@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
-cd "$(dirname "${BASH_SOURCE[0]}")" || exit
+command -v git &> /dev/null || { echo "❌ git не установлен"; exit 1; }
 
-echo "🚀 Обновление конфигурации zshus..."
+UPDATE=false
+
+cd "$(dirname "${BASH_SOURCE[0]}")" || exit
 
 # Проверяем, есть ли локальные изменения
 if ! git diff --quiet HEAD; then
-    echo ""
     echo "⚠️  Обнаружены локальные изменения:"
     git status --short
     echo ""
@@ -20,7 +21,7 @@ if ! git diff --quiet HEAD; then
             echo "❌ Git user не настроен. Выполните:"
             echo "   git config --global user.name 'Ваше Имя'"
             echo "   git config --global user.email 'email@example.com'"
-            exit 1
+            echo "ℹ️  Пропускаем окоммит, ваши изменения сохранены локально"
         fi
 
         git add .
@@ -30,27 +31,49 @@ if ! git diff --quiet HEAD; then
     fi
 fi
 
-# Пытаемся обновиться (rebase покажет конфликты)
+# Забираем изменения из удалённого репозитория (без слияния)
+git fetch origin
 
-echo "📥 Обновление из репозитория..."
+# Проверяем, есть ли новые изменения в удалённом репозитории
+LOCAL_COMMIT=$(git rev-parse HEAD)
+REMOTE_COMMIT=$(git rev-parse origin/main)
 
-if ! git pull --rebase origin main 2>&1; then
-    # Отменяем rebase при конфликте
-    git rebase --abort 2>/dev/null
-    echo ""
-    echo "❌ Конфликт с удалёнными изменениями!"
-    echo "   Решение: git stash или git reset --hard origin/main"
-    exit 1
+if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+    # Удалённые изменения есть, пытаемся их применить
+    if git diff --quiet HEAD; then
+        # Нет локальных изменений — просто обновляемся
+        git pull --ff-only origin main
+        echo "✅ Репозиторий обновлён"
+    else
+        # Есть локальные изменения — пробуем rebase
+        echo "⚠️  Есть локальные изменения и новые коммиты на GitHub"
+
+        if git pull --rebase origin main 2>/dev/null; then
+            echo "✅ Репозиторий обновлён, ваши изменения сохранены"
+	    UPDATE=true
+        else
+            git rebase --abort 2>/dev/null
+            echo "❌ Конфликт! Ваши изменения конфликтуют с новыми"
+            echo "   Решение: git stash или git reset --hard origin/main"
+            echo "ℹ️  Пропускаем обновление, ваши изменения сохранены локально"
+        fi
+    fi
+else
+    echo "✅ Репозиторий уже актуален (нет новых изменений)"
 fi
 
-# Обновляем субмодули
-git submodule update --init --recursive 2>/dev/null || true
+# Обновляем субмодули и проверяем, были ли изменения
+if git submodule update --init --recursive 2>/dev/null; then
+    # Проверяем, обновились ли субмодули (появились новые файлы)
+    if [ -n "$(git submodule status | grep -v '^ ')" ]; then
+        UPDATE=true
+    fi
+fi
+
 
 # Проверяем и добавляем source в .zshrc
 ZSHRC_FILE="$HOME/.zshrc"
 SOURCE_LINE="source \"\$HOME/.zshus/zshus.zsh\""
-
-echo ""
 
 # Создаём .zshrc если его нет
 if [ ! -f "$ZSHRC_FILE" ]; then
@@ -58,8 +81,8 @@ if [ ! -f "$ZSHRC_FILE" ]; then
     echo "✅ Создан файл $ZSHRC_FILE"
 fi
 
-# Проверяем, есть ли уже наша строка
-if ! grep -q "\.zshus/zshus\.zsh" "$ZSHRC_FILE"; then
+# Проверяем, есть ли строка
+if ! grep -Fq "$SOURCE_LINE" "$ZSHRC_FILE"; then
     echo "🔧 Добавляем source в .zshrc..."
 
     # Создаём временный файл
@@ -75,11 +98,14 @@ if ! grep -q "\.zshus/zshus\.zsh" "$ZSHRC_FILE"; then
 
     # Заменяем оригинальный файл
     mv "$TMP_FILE" "$ZSHRC_FILE"
-
+    echo "💡 Перезапустите терминал или выполните: source ~/.zshrc"
     echo "✅ Строка добавлена в начало .zshrc"
+    UPDATE=true
 fi
 
 echo ""
 echo "🎉 Конфигурация zshus обновлена"
-echo ""
-echo "💡 Перезапустите терминал или выполните: source ~/.zshrc"
+if [ "$UPDATE" = true ]; then
+    echo "💡 Перезапустите терминал или выполните: source ~/.zshrc"
+fi
+
