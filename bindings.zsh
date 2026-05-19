@@ -11,3 +11,6 @@ bindkey '\e[5C' forward-word
 bindkey '\e[5D' backward-word
 bindkey '^[[5C' forward-word
 bindkey '^[[5D' backward-word
+
+# Вставка sudo (ESC)
+bindkey '\e\e' sudo-command-line

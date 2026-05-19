@@ -29,15 +29,19 @@ autoload -Uz down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 
-# ---------- Navigation ----------
-# Исправление навигации для Ctrl + Стрелки в Windows Terminal
-bindkey '^[[1;5C' forward-word     # Ctrl + Стрелка вправо
-bindkey '\e[5C' forward-word
-bindkey '^[[5C' forward-word
+# ---------- sudo at start ----------
+sudo-command-line() {
+    if [[ $BUFFER == sudo\ * ]]; then
+        (( CURSOR -= 5 ))
+        BUFFER="${BUFFER#sudo }"
+    else
+        BUFFER="sudo $BUFFER"
+        (( CURSOR += 5 ))
+    fi
+    zle reset-prompt
+}
 
-bindkey '^[[1;5D' backward-word    # Ctrl + Стрелка влево
-bindkey '\e[5D' backward-word
-bindkey '^[[5D' backward-word
+zle -N sudo-command-line
 
 # ---------- History file ----------
 
