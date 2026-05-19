@@ -1,25 +1,64 @@
-# Функция определения цвета по имени ОС
 get_system_color() {
-    # Проверяем ОС
-    if grep -qi "debian" /etc/os-release 2>/dev/null; then
-        echo "\033[91m"  # Красный (Debian)
-    elif grep -qi "ubuntu" /etc/os-release 2>/dev/null; then
-        echo "\033[91m"  # Красный + оранжевый? Обычно берут #E95420, но в bash ограниченная палитра
-    elif grep -qi "arch" /etc/os-release 2>/dev/null; then
-        echo "\033[36m"  # Циан (Arch)
-    elif grep -qi "fedora" /etc/os-release 2>/dev/null; then
-        echo "\033[34m"  # Синий (Fedora)
-    elif grep -qi "android" /proc/version 2>/dev/null; then
-        echo "\033[32m"  # Зелёный (Android)
-    elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
-        echo "\033[34m"  # Синий (Windows)
-    elif [[ "$(uname)" == "Darwin" ]]; then
-        echo "\033[95m"  # Пурпурный/серый (macOS)
-    else
-        echo "\033[0m"   # Стандартный
+    # Проверяем поддержку TrueColor
+    local truecolor_support=false
+    if [[ "$COLORTERM" =~ ^(truecolor|24bit)$ ]] || [[ "$TERM" =~ ^(xterm-kitty|alacritty|wezterm|foot) ]]; then
+        truecolor_support=true
     fi
+
+    local os_type=""
+
+    if grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then
+	os_type="wsl"
+    elif grep -qi "raspbian" /etc/os-release 2>/dev/null; then
+        os_type="raspbian"
+    elif grep -qi "debian" /etc/os-release 2>/dev/null; then
+        os_type="debian"
+    elif grep -qi "ubuntu" /etc/os-release 2>/dev/null; then
+        os_type="ubuntu"
+    elif grep -qi "arch" /etc/os-release 2>/dev/null; then
+        os_type="arch"
+    elif grep -qi "fedora" /etc/os-release 2>/dev/null; then
+        os_type="fedora"
+    elif grep -qi "android" /proc/version 2>/dev/null; then
+        os_type="android"
+    elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+        os_type="windows"
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        os_type="macos"
+    else
+        os_type="unknown"
+    fi
+
+    # Возвращаем цвет в зависимости от ОС и поддержки TrueColor
+    case "$os_type" in
+        wsl)
+	    $truecolor_support && echo "38;2;0;120;215" || echo "34" ;;
+        raspbian)
+            $truecolor_support && echo "38;2;200;50;80" || echo "31" ;;  # Малиновый красный
+        debian)
+            $truecolor_support && echo "38;2;215;0;85" || echo "31" ;;   # Debian red #D70055
+        ubuntu)
+            $truecolor_support && echo "38;2;233;84;32" || echo "38;5;208" ;;  # Ubuntu orange #E95420
+        arch)
+            $truecolor_support && echo "38;2;23;147;209" || echo "36" ;; # Arch blue #1793D1
+        fedora)
+            $truecolor_support && echo "38;2;60;110;180" || echo "34" ;; # Fedora blue #3C6EB4
+        android)
+            $truecolor_support && echo "38;2;164;198;57" || echo "32" ;; # Android green #A4C639
+        windows)
+            $truecolor_support && echo "38;2;0;120;215" || echo "34" ;;  # Windows blue #0078D6
+        macos)
+            $truecolor_support && echo "38;2;160;90;210" || echo "35" ;; # macOS purple
+        *)
+            echo "37" ;;
+    esac
 }
 
+# Применение цвета к тексту
+apply_system_color() {
+    local color_code=$(get_system_color)
+    echo -ne "\033[${color_code}m"
+}
 
 # ---------- Git ----------
 autoload -Uz vcs_info
@@ -69,7 +108,7 @@ precmd() {
   : ${TITLE_COLOR:='%F{15}'}
   : ${NAME_COLOR:='%F{10}'}
   : ${PATH_COLOR:='%F{11}'}
-  : ${SYSTEM_COLOR:=$(get_system_color)}
+  : ${SYSTEM_COLOR:=$(apply_system_color)}
   : ${PLEA_COLOR:='%F{8}'}
 
   PROMPT='
