@@ -25,7 +25,7 @@ if ! git diff --quiet HEAD; then
         else
             git add .
 
-            read -p "Сообщение коммита [WIP]: " msg
+            read -e -p "Сообщение коммита [WIP]: " msg
 
             # Если сообщение не пустое - делаем коммит и пуш
             if [[ -n "$msg" ]]; then
