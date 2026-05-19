@@ -1,10 +1,4 @@
-get_system_color() {
-    # Проверяем поддержку TrueColor
-    local truecolor_support=false
-    if [[ "$COLORTERM" =~ ^(truecolor|24bit)$ ]] || [[ "$TERM" =~ ^(xterm-kitty|alacritty|wezterm|foot) ]]; then
-        truecolor_support=true
-    fi
-
+get_system_name() {
     local os_type=""
 
     if [[ "$(uname -o 2>/dev/null)" == "Android" ]] || \
@@ -14,7 +8,7 @@ get_system_color() {
        getprop ro.build.version.sdk &>/dev/null; then
         os_type="android"
     elif grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then
-	os_type="wsl"
+        os_type="wsl"
     elif grep -qi "raspbian" /etc/os-release 2>/dev/null; then
         os_type="raspbian"
     elif grep -qi "debian" /etc/os-release 2>/dev/null; then
@@ -32,6 +26,17 @@ get_system_color() {
     else
         os_type="unknown"
     fi
+    echo "$os_type"
+}
+
+get_system_color() {
+    # Проверяем поддержку TrueColor
+    local truecolor_support=false
+    if [[ "$COLORTERM" =~ ^(truecolor|24bit)$ ]] || [[ "$TERM" =~ ^(xterm-kitty|alacritty|wezterm|foot) ]]; then
+        truecolor_support=true
+    fi
+
+    local os_type=$(get_system_name)
 
     # Возвращаем цвет в зависимости от ОС и поддержки TrueColor
     case "$os_type" in
@@ -114,6 +119,6 @@ precmd() {
   : ${PLEA_COLOR:='%F{8}'}
 
   PROMPT='
-${TITLE_COLOR}╭─'"$(python_env)"'${NAME_COLOR}%n ${PLEA_COLOR}at ${SYSTEM_COLOR}%m ${PLEA_COLOR}in ${PATH_COLOR}%~${vcs_info_msg_0_}$(git_dirty)%f
+${TITLE_COLOR}╭─'"$(python_env)"'${NAME_COLOR}%n ${PLEA_COLOR}at ${SYSTEM_COLOR}%m ($(get_system_name)) ${PLEA_COLOR}in ${PATH_COLOR}%~${vcs_info_msg_0_}$(git_dirty)%f
 ${TITLE_COLOR}╰'"${EXIT}${SYMBOL}"' '
 }
