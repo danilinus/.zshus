@@ -9,7 +9,7 @@ get_system_name() {
         os_type="android"
     elif grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then
         os_type="wsl"
-    elif grep -qi "raspbian" /etc/os-release 2>/dev/null; then
+    elif [ -f /etc/rpi-issue ]; then
         os_type="raspbian"
     elif grep -qi "ubuntu" /etc/os-release 2>/dev/null; then
         os_type="ubuntu"
