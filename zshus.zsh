@@ -19,7 +19,7 @@ fi
 
 # ---------- Fast completion ----------
 autoload -Uz compinit
-compinit -C
+compinit
 
 setopt PROMPT_SUBST
 
