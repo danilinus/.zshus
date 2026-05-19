@@ -1,3 +1,12 @@
+check_truecolor_support() {
+    [[ "$COLORTERM" =~ ^(truecolor|24bit)$ ]] && return 0
+    [[ "$TERM" =~ ^(xterm-kitty|alacritty|wezterm|foot|contour|rio) ]] && return 0
+    [[ "$TERM_PROGRAM" =~ ^(vscode|Hyper|Tabby|Warp)$ ]] && return 0
+    [[ -n "$WT_SESSION" || "$TERM_PROGRAM" == "Windows Terminal" ]] && return 0
+    command -v tput &>/dev/null && [[ $(tput colors 2>/dev/null) -ge 256 ]] && return 0
+    return 1
+}
+
 get_system_name() {
     local os_type=""
 
@@ -32,7 +41,7 @@ get_system_name() {
 get_system_color() {
     # Проверяем поддержку TrueColor
     local truecolor_support=false
-    if [[ "$COLORTERM" =~ ^(truecolor|24bit)$ ]] || [[ "$TERM" =~ ^(xterm-kitty|alacritty|wezterm|foot) ]]; then
+    if check_truecolor_support; then
         truecolor_support=true
     fi
 
