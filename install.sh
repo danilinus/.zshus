@@ -21,13 +21,20 @@ if ! git diff --quiet HEAD; then
             echo "❌ Git user не настроен. Выполните:"
             echo "   git config --global user.name 'Ваше Имя'"
             echo "   git config --global user.email 'email@example.com'"
-            echo "ℹ️  Пропускаем окоммит, ваши изменения сохранены локально"
-        fi
+            echo "ℹ️  Пропускаем коммит, ваши изменения сохранены локально"
+        else
+            git add .
 
-        git add .
-        read -p "Сообщение коммита [WIP]: " msg
-	git commit -m "${msg:-WIP before update}" 2>/dev/null && echo "✅ Закоммичено" || echo "⚠️  Не удалось закоммитить"
-        git push origin main 2>/dev/null && echo "✅ Отправлено на GitHub" || echo "⚠️  Не удалось отправить (продолжаем)"
+            read -p "Сообщение коммита [WIP]: " msg
+
+            # Если сообщение не пустое - делаем коммит и пуш
+            if [[ -n "$msg" ]]; then
+                git commit -m "$msg" 2>/dev/null && echo "  Закоммичено" || echo "  Не удалось закоммитить"
+                git push origin main 2>/dev/null && echo "  Отправлено на GitHub" || echo "  Не удалось отправить"
+            else
+                echo "ℹ️  Сообщение пустое - коммит пропущен"
+            fi
+        fi
     fi
 fi
 
