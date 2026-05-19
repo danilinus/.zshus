@@ -2,9 +2,9 @@
 get_system_color() {
     # Проверяем ОС
     if grep -qi "debian" /etc/os-release 2>/dev/null; then
-        echo "\033[31m"  # Красный (Debian)
+        echo "\033[91m"  # Красный (Debian)
     elif grep -qi "ubuntu" /etc/os-release 2>/dev/null; then
-        echo "\033[31m"  # Красный + оранжевый? Обычно берут #E95420, но в bash ограниченная палитра
+        echo "\033[91m"  # Красный + оранжевый? Обычно берут #E95420, но в bash ограниченная палитра
     elif grep -qi "arch" /etc/os-release 2>/dev/null; then
         echo "\033[36m"  # Циан (Arch)
     elif grep -qi "fedora" /etc/os-release 2>/dev/null; then
