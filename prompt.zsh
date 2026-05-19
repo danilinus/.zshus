@@ -7,7 +7,13 @@ get_system_color() {
 
     local os_type=""
 
-    if grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then
+    if [[ "$(uname -o 2>/dev/null)" == "Android" ]] || \
+       [[ -d /system/app ]] || \
+       [[ -d /data/data/com.termux ]] || \
+       [[ -n "$PREFIX" && "$PREFIX" == "/data/data/com.termux/files/usr" ]] || \
+       getprop ro.build.version.sdk &>/dev/null; then
+        os_type="android"
+    elif grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then
 	os_type="wsl"
     elif grep -qi "raspbian" /etc/os-release 2>/dev/null; then
         os_type="raspbian"
@@ -19,8 +25,6 @@ get_system_color() {
         os_type="arch"
     elif grep -qi "fedora" /etc/os-release 2>/dev/null; then
         os_type="fedora"
-    elif grep -qi "android" /proc/version 2>/dev/null; then
-        os_type="android"
     elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
         os_type="windows"
     elif [[ "$(uname)" == "Darwin" ]]; then
