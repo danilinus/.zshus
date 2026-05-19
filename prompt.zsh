@@ -11,10 +11,10 @@ get_system_name() {
         os_type="wsl"
     elif grep -qi "raspbian" /etc/os-release 2>/dev/null; then
         os_type="raspbian"
-    elif grep -qi "debian" /etc/os-release 2>/dev/null; then
-        os_type="debian"
     elif grep -qi "ubuntu" /etc/os-release 2>/dev/null; then
         os_type="ubuntu"
+    elif grep -qi "debian" /etc/os-release 2>/dev/null; then
+        os_type="debian"
     elif grep -qi "arch" /etc/os-release 2>/dev/null; then
         os_type="arch"
     elif grep -qi "fedora" /etc/os-release 2>/dev/null; then
