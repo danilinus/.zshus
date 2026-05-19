@@ -46,7 +46,7 @@ get_system_color() {
         fedora)
             $truecolor_support && echo "38;2;60;110;180" || echo "94" ;; # Fedora blue #3C6EB4
         android)
-            $truecolor_support && echo "38;2;164;198;57" || echo "32" ;; # Android green #A4C639
+            echo "92" ;; # Android green #A4C639
         windows|wsl)
             echo "94" ;;  # Windows blue
         macos)
