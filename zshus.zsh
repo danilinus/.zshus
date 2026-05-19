@@ -5,10 +5,6 @@ source "$ZSHUS/aliases.zsh"
 source "$ZSHUS/bindings.zsh"
 source "$ZSHUS/prompt.zsh"
 
-source "$ZSHUS/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
-source "$ZSHUS/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-source "$ZSHUS/plugins/fzf-tab/fzf-tab.plugin.zsh"
-
 source "$ZSHUS/brew.zsh"
 
 # man with syntax highlighting using bat (if installed)
@@ -53,3 +49,9 @@ setopt APPEND_HISTORY
 setopt INC_APPEND_HISTORY
 setopt SHARE_HISTORY
 setopt HIST_IGNORE_ALL_DUPS
+
+# ---------- Plugins ----------
+
+source "$ZSHUS/plugins/fzf-tab/fzf-tab.plugin.zsh"
+source "$ZSHUS/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+source "$ZSHUS/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
