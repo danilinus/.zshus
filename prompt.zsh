@@ -35,8 +35,6 @@ get_system_color() {
 
     # Возвращаем цвет в зависимости от ОС и поддержки TrueColor
     case "$os_type" in
-        wsl)
-	    $truecolor_support && echo "38;2;0;120;215" || echo "34" ;;
         raspbian)
             $truecolor_support && echo "38;2;200;50;80" || echo "31" ;;  # Малиновый красный
         debian)
@@ -44,15 +42,15 @@ get_system_color() {
         ubuntu)
             $truecolor_support && echo "38;2;233;84;32" || echo "38;5;208" ;;  # Ubuntu orange #E95420
         arch)
-            $truecolor_support && echo "38;2;23;147;209" || echo "36" ;; # Arch blue #1793D1
+            $truecolor_support && echo "38;2;23;147;209" || echo "96" ;; # Arch blue #1793D1
         fedora)
-            $truecolor_support && echo "38;2;60;110;180" || echo "34" ;; # Fedora blue #3C6EB4
+            $truecolor_support && echo "38;2;60;110;180" || echo "94" ;; # Fedora blue #3C6EB4
         android)
             $truecolor_support && echo "38;2;164;198;57" || echo "32" ;; # Android green #A4C639
-        windows)
-            $truecolor_support && echo "38;2;0;120;215" || echo "34" ;;  # Windows blue #0078D6
+        windows|wsl)
+            echo "94" ;;  # Windows blue
         macos)
-            $truecolor_support && echo "38;2;160;90;210" || echo "35" ;; # macOS purple
+            $truecolor_support && echo "38;2;160;90;210" || echo "95" ;; # macOS purple
         *)
             echo "37" ;;
     esac
