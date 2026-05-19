@@ -1,3 +1,26 @@
+# Функция определения цвета по имени ОС
+get_system_color() {
+    # Проверяем ОС
+    if grep -qi "debian" /etc/os-release 2>/dev/null; then
+        echo "\033[31m"  # Красный (Debian)
+    elif grep -qi "ubuntu" /etc/os-release 2>/dev/null; then
+        echo "\033[32m"  # Красный + оранжевый? Обычно берут #E95420, но в bash ограниченная палитра
+    elif grep -qi "arch" /etc/os-release 2>/dev/null; then
+        echo "\033[36m"  # Циан (Arch)
+    elif grep -qi "fedora" /etc/os-release 2>/dev/null; then
+        echo "\033[34m"  # Синий (Fedora)
+    elif grep -qi "android" /proc/version 2>/dev/null; then
+        echo "\033[32m"  # Зелёный (Android)
+    elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+        echo "\033[34m"  # Синий (Windows)
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        echo "\033[35m"  # Пурпурный/серый (macOS)
+    else
+        echo "\033[0m"   # Стандартный
+    fi
+}
+
+
 # ---------- Git ----------
 autoload -Uz vcs_info
 zstyle ':vcs_info:*' enable git
@@ -43,11 +66,11 @@ precmd() {
     SYMBOL="%F{10}$%f"
   fi
 
-  TITLE_COLOR='%F{15}'
-  NAME_COLOR='%F{10}'
-  PATH_COLOR='%F{11}'
-  SYSTEM_COLOR='%F{12}'
-  PLEA_COLOR='%F{8}'
+  : ${TITLE_COLOR:='%F{15}'}
+  : ${NAME_COLOR:='%F{10}'}
+  : ${PATH_COLOR:='%F{11}'}
+  : ${SYSTEM_COLOR:=$(get_system_color)}
+  : ${PLEA_COLOR:='%F{8}'}
 
   PROMPT='
 ${TITLE_COLOR}╭─'"$(python_env)"'${NAME_COLOR}%n ${PLEA_COLOR}at ${SYSTEM_COLOR}%m ${PLEA_COLOR}in ${PATH_COLOR}%~${vcs_info_msg_0_}$(git_dirty)%f
