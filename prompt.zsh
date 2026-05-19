@@ -4,7 +4,7 @@ get_system_color() {
     if grep -qi "debian" /etc/os-release 2>/dev/null; then
         echo "\033[31m"  # Красный (Debian)
     elif grep -qi "ubuntu" /etc/os-release 2>/dev/null; then
-        echo "\033[32m"  # Красный + оранжевый? Обычно берут #E95420, но в bash ограниченная палитра
+        echo "\033[31m"  # Красный + оранжевый? Обычно берут #E95420, но в bash ограниченная палитра
     elif grep -qi "arch" /etc/os-release 2>/dev/null; then
         echo "\033[36m"  # Циан (Arch)
     elif grep -qi "fedora" /etc/os-release 2>/dev/null; then
@@ -14,7 +14,7 @@ get_system_color() {
     elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
         echo "\033[34m"  # Синий (Windows)
     elif [[ "$(uname)" == "Darwin" ]]; then
-        echo "\033[35m"  # Пурпурный/серый (macOS)
+        echo "\033[95m"  # Пурпурный/серый (macOS)
     else
         echo "\033[0m"   # Стандартный
     fi
