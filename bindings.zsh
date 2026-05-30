@@ -24,3 +24,6 @@ bindkey "^[OF" end-of-line
 # Ctrl + UP/DOWN
 bindkey "^[^[[A" beginning-of-line
 bindkey "^[^[[B" end-of-line
+
+# Привязываем Ctrl+N к переносу строки
+bindkey '^N' insert-linebreak

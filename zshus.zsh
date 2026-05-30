@@ -28,6 +28,13 @@ autoload -Uz down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 
+# ---------- New Line ----------
+function insert-linebreak {
+    LBUFFER+=$'\n'
+}
+
+zle -N insert-linebreak
+
 # ---------- sudo at start ----------
 sudo-command-line() {
     if [[ $BUFFER == sudo\ * ]]; then
