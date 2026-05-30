@@ -13,6 +13,9 @@ if command -v bat &> /dev/null; then
     export MANROFFOPT="-c"
 fi
 
+# igonore comments
+setopt INTERACTIVE_COMMENTS
+
 # ---------- Fast completion ----------
 autoload -Uz compinit
 compinit
