@@ -20,3 +20,7 @@ bindkey "^[[H" beginning-of-line
 bindkey "^[[F" end-of-line
 bindkey "^[OH" beginning-of-line
 bindkey "^[OF" end-of-line
+
+# Ctrl + UP/DOWN
+bindkey "^[^[[A" beginning-of-line
+bindkey "^[^[[B" end-of-line
