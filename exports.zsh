@@ -1,5 +1,8 @@
-export LANG=ru_RU.UTF-8 2>/dev/null || export LANG=C.UTF-8
-export LC_ALL=ru_RU.UTF-8 2>/dev/null || export LC_ALL=C.UTF-8
+# Подавление предупреждений setlocal для Termux
+if [[ "$(uname -o)" != "Android" ]]; then
+    export LANG=ru_RU.UTF-8 2>/dev/null || export LANG=C.UTF-8
+    export LC_ALL=ru_RU.UTF-8 2>/dev/null || export LC_ALL=C.UTF-8
+fi
 
 PATH="$PATH:$HOME/bin"
 PATH="$PATH:$HOME/.local/bin"
