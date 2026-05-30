@@ -14,3 +14,9 @@ bindkey '^[[5D' backward-word
 
 # Вставка sudo (ESC)
 bindkey '\e\e' sudo-command-line
+
+# Home и End
+bindkey "^[[H" beginning-of-line
+bindkey "^[[F" end-of-line
+bindkey "^[OH" beginning-of-line
+bindkey "^[OF" end-of-line
