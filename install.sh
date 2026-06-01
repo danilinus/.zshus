@@ -3,38 +3,17 @@
 command -v git &> /dev/null || { echo "❌ git не установлен"; exit 1; }
 
 # Проверка и установка Zsh
-if ! command -v zsh &> /dev/null; then
-    echo "Zsh не найден. Устанавливаю..."
-
-    # Определяем ОС
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        # Linux
-        if command -v apt &> /dev/null; then
-            sudo apt update && sudo apt install zsh -y
-        elif command -v dnf &> /dev/null; then
-            sudo dnf install zsh -y
-        elif command -v yum &> /dev/null; then
-            sudo yum install zsh -y
-        elif command -v pacman &> /dev/null; then
-            sudo pacman -S zsh --noconfirm
-        else
-            echo "Не удалось определить менеджер пакетов. Установите Zsh вручную."
-            exit 1
-        fi
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
-        if command -v brew &> /dev/null; then
-            brew install zsh
-        else
-            echo "Homebrew не установлен. Установите Zsh вручную или установите Homebrew:"
-            exit 1
-        fi
+command -v zsh &> /dev/null || {
+    echo "Устанавливаю Zsh..."
+    if command -v apt &> /dev/null; then apt update && apt install zsh -y
+    elif command -v dnf &> /dev/null; then dnf install zsh -y
+    elif command -v pacman &> /dev/null; then pacman -S zsh --noconfirm
+    elif command -v brew &> /dev/null; then brew install zsh -y
     else
-        echo "Неподдерживаемая ОС: $OSTYPE"
+        echo "Невозможно установить Zsh..."
         exit 1
     fi
-    echo "Zsh успешно установлен!"
-fi
+}
 
 UPDATE=false
 
@@ -141,7 +120,10 @@ if ! grep -Fq "$SOURCE_LINE" "$ZSHRC_FILE"; then
     UPDATE=true
 fi
 
-chsh -s $(which zsh)
+ZSH_PATH=$(which zsh)
+if [ "$SHELL" != "$ZSH_PATH" ]; then
+    chsh -s "$ZSH_PATH" && echo "✅ Shell изменён на Zsh"
+fi
 
 echo ""
 echo "🎉 Конфигурация zshus обновлена"
