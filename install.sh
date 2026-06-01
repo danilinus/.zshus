@@ -120,8 +120,9 @@ if ! grep -Fq "$SOURCE_LINE" "$ZSHRC_FILE"; then
     UPDATE=true
 fi
 
+CURRENT_SHELL=$(basename "$SHELL")
 ZSH_PATH=$(which zsh)
-if [ "$SHELL" != "$ZSH_PATH" ]; then
+if [ "$CURRENT_SHELL" != "zsh" ]; then
     chsh -s "$ZSH_PATH" && echo "✅ Shell изменён на Zsh"
 fi
 
