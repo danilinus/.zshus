@@ -90,8 +90,6 @@ fi
 
 # Проверяем, есть ли строка
 if ! grep -Fq "$SOURCE_LINE" "$ZSHRC_FILE"; then
-    echo "🔧 Добавляем source в .zshrc..."
-
     # Создаём временный файл
     TMP_FILE="${TMPDIR:-/tmp}/zshrc_temp.$$.$RANDOM"
 
@@ -105,8 +103,7 @@ if ! grep -Fq "$SOURCE_LINE" "$ZSHRC_FILE"; then
 
     # Заменяем оригинальный файл
     mv "$TMP_FILE" "$ZSHRC_FILE"
-    echo "💡 Перезапустите терминал или выполните: source ~/.zshrc"
-    echo "✅ Строка добавлена в начало .zshrc"
+    echo "🔧 Строка добавлена в начало .zshrc"
     UPDATE=true
 fi
 
