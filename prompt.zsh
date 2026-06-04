@@ -84,12 +84,19 @@ zstyle ':vcs_info:git:*' actionformats ' %F{10}(%b|%a)%f'
 
 git_dirty() {
   command git rev-parse --git-dir > /dev/null 2>&1 || return
-
-  if ! command git diff --no-ext-diff --quiet --cached 2>/dev/null || \
-     ! command git diff --no-ext-diff --quiet 2>/dev/null; then
+  if ! command git diff-index --quiet --cached HEAD 2>/dev/null; then
     echo "%F{11}*%f"
   fi
 }
+
+#git_dirty() {
+#  command git rev-parse --git-dir > /dev/null 2>&1 || return
+#
+#  if ! command git diff --no-ext-diff --quiet --cached 2>/dev/null || \
+#     ! command git diff --no-ext-diff --quiet 2>/dev/null; then
+#    echo "%F{11}*%f"
+#  fi
+#}
 
 # ---------- Python env ----------
 python_env() {
@@ -126,8 +133,10 @@ precmd() {
   : ${PATH_COLOR:='%F{11}'}
   : ${SYSTEM_COLOR:=$(apply_system_color)}
   : ${PLEA_COLOR:='%F{8}'}
-
+  py_env=$(python_env)
+  git_stat=$(git_dirty)
+  sys_nam=$(get_system_name)
   PROMPT='
-${TITLE_COLOR}╭─'"$(python_env)"'${NAME_COLOR}%n ${PLEA_COLOR}at ${SYSTEM_COLOR}%m ($(get_system_name)) ${PLEA_COLOR}in ${PATH_COLOR}%~${vcs_info_msg_0_}$(git_dirty)%f
+${TITLE_COLOR}╭─'"${py_env}"'${NAME_COLOR}%n ${PLEA_COLOR}at ${SYSTEM_COLOR}%m (${sys_nam}) ${PLEA_COLOR}in ${PATH_COLOR}%~${vcs_info_msg_0_}${git_stat}%f
 ${TITLE_COLOR}╰'"${EXIT}${SYMBOL}"' '
 }
