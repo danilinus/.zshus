@@ -137,6 +137,8 @@ precmd() {
   git_stat=$(git_dirty)
   sys_nam=$(get_system_name)
   PROMPT='
-${TITLE_COLOR}╭─'"${py_env}"'${NAME_COLOR}%n ${PLEA_COLOR}at ${SYSTEM_COLOR}%m (${sys_nam}) ${PLEA_COLOR}in ${PATH_COLOR}%~${vcs_info_msg_0_}${git_stat}%f
-${TITLE_COLOR}╰'"${EXIT}${SYMBOL}"' '
+${TITLE_COLOR}'"${py_env}"'${NAME_COLOR}%n ${PLEA_COLOR}at ${SYSTEM_COLOR}%m (${sys_nam}) ${PLEA_COLOR}in ${PATH_COLOR}%~${vcs_info_msg_0_}${git_stat}%f
+${TITLE_COLOR}'"${EXIT}${SYMBOL}"' '
+#╭─
+#╰
 }
