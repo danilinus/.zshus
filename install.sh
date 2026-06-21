@@ -138,6 +138,8 @@ if [ "$CURRENT_SHELL" != "zsh" ]; then
     fi
 fi
 
+rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/zshus.status"
+
 echo ""
 if [ "$UPDATE" = true ]; then
     echo "🎉 Конфигурация zshus обновлена"

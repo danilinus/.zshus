@@ -8,7 +8,7 @@ source "$ZSHUS/prompt.zsh"
 source "$ZSHUS/brew.zsh"
 
 # man with syntax highlighting using bat (if installed)
-if command -v bat &> /dev/null; then
+if command -v bat &>/dev/null; then
     export MANPAGER="sh -c 'col -bx | bat --language=man --plain --theme=default'"
     export MANROFFOPT="-c"
 fi
@@ -38,11 +38,11 @@ zle -N insert-linebreak
 # ---------- sudo at start ----------
 sudo-command-line() {
     if [[ $BUFFER == sudo\ * ]]; then
-        (( CURSOR -= 5 ))
+        ((CURSOR -= 5))
         BUFFER="${BUFFER#sudo }"
     else
         BUFFER="sudo $BUFFER"
-        (( CURSOR += 5 ))
+        ((CURSOR += 5))
     fi
     zle reset-prompt
 }
