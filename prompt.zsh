@@ -112,23 +112,25 @@ python_env() {
 # ---------- Фоновая проверка обновления ----------
 ZSHUS_STATUS_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/zshus.status"
 ZSHUS_CHECK_RUNNING=0
+ZSHUS_CHECK_DONE=0
 
 zshus_start_check() {
-    [[ -f "$ZSHUS_STATUS_FILE" ]] && return
+    [[ -f "$ZSHUS_STATUS_FILE" && $ZSHUS_CHECK_DONE -eq 1 ]] && return
     [[ $ZSHUS_CHECK_RUNNING -eq 1 ]] && return
 
     ZSHUS_CHECK_RUNNING=1
+    ZSHUS_CHECK_DONE=1
 
-    (
+    {
         us_status=""
-
-        cd "$HOME/.zshus"
-        bash "./has_local_changes.sh" && us_status="*"
-        bash "./has_remote_changes.sh" && us_status="${us_status}↓"
+        cd "$HOME/.zshus" 2>/dev/null && {
+            bash "./has_local_changes.sh" && us_status="*"
+            bash "./has_remote_changes.sh" && us_status="${us_status}↓"
+        }
 
         echo "$us_status" >"$ZSHUS_STATUS_FILE"
         ZSHUS_CHECK_RUNNING=0
-    ) >/dev/null 2>&1 &!
+    } >/dev/null 2>&1 &!
 }
 
 zshus_status() {
