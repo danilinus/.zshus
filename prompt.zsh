@@ -115,12 +115,8 @@ ZSHUS_CHECK_PID=0
 ZSHUS_CHECK_DONE=0
 
 zshus_start_check() {
-    [[ -f "$ZSHUS_STATUS_FILE" && $ZSHUS_CHECK_DONE -eq 1 ]] && return
-
-    # Проверяем, жив ли фоновый процесс
-    if [[ $ZSHUS_CHECK_PID -ne 0 ]] && kill -0 $ZSHUS_CHECK_PID 2>/dev/null; then
-        return  # Процесс еще выполняется
-    fi
+    [[ -f "$ZSHUS_STATUS_FILE" && $ZSHUS_CHECK_DONE -eq 1 ]] && echo "file exits" && return
+    [[ $ZSHUS_CHECK_PID -ne 0 ]] && kill -0 $ZSHUS_CHECK_PID 2>/dev/null && echo "pid exits" && return
 
     ZSHUS_CHECK_DONE=1
 
