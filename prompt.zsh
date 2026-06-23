@@ -123,8 +123,8 @@ zshus_start_check() {
     {
         us_status=""
         cd "$HOME/.zshus" 2>/dev/null && {
-            bash "./has_local_changes.sh" && us_status="*"  # || us_status="-"
-            bash "./has_remote_changes.sh" && us_status="${us_status}↓$(git rev-list --count HEAD..origin/main)"  # || us_status="${us_status}|"
+            bash "./has_local_changes.sh" && us_status="*"
+            bash "./has_remote_changes.sh" && us_status="${us_status}↓$(git rev-list --count HEAD..origin/main)"
         } || us_tatus="[.zshus not found]"
 
         echo "$us_status" >"$ZSHUS_STATUS_FILE"
