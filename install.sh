@@ -72,11 +72,6 @@ if bash "$SCRIPT_DIR/has_remote_updates.sh"; then
     echo "⬇️ Доступно обновление ($COMMITS коммитов)"
 
     if bash "$SCRIPT_DIR/has_local_changes.sh"; then
-        # Нет локальных изменений — просто обновляемся
-        git pull --ff-only origin main
-        echo "✅ Репозиторий обновлён"
-        UPDATE=true
-    else
         # Есть локальные изменения — пробуем rebase
         echo "⚠️ Есть локальные изменения"
 
@@ -89,6 +84,11 @@ if bash "$SCRIPT_DIR/has_remote_updates.sh"; then
             echo "   Решение: git stash или git reset --hard origin/main"
             echo "ℹ️  Пропускаем обновление, ваши изменения сохранены локально"
         fi
+    else
+        # Нет локальных изменений — просто обновляемся
+        git pull --ff-only origin main
+        echo "✅ Репозиторий обновлён"
+        UPDATE=true
     fi
 else
     echo "✅ Репозиторий уже актуален (нет новых изменений)"
