@@ -115,20 +115,19 @@ ZSHUS_CHECK_PID=0
 ZSHUS_CHECK_DONE=0
 
 zshus_start_check() {
-    [[ -f "$ZSHUS_STATUS_FILE" && $ZSHUS_CHECK_DONE -eq 1 ]] && echo "file exits" && return
-    [[ $ZSHUS_CHECK_PID -ne 0 ]] && kill -0 $ZSHUS_CHECK_PID 2>/dev/null && echo "pid exits" && return
+    [[ -f "$ZSHUS_STATUS_FILE" && $ZSHUS_CHECK_DONE -eq 1 ]] && return
+    [[ $ZSHUS_CHECK_PID -ne 0 ]] && kill -0 $ZSHUS_CHECK_PID 2>/dev/null && return
 
     ZSHUS_CHECK_DONE=1
 
     {
         us_status=""
-        cd "$HOME/.zshus" && {
-            bash "./has_local_changes.sh" && us_status="*" || us_status="+"
-            bash "./has_remote_changes.sh" && us_status="${us_status}↓$(git rev-list --count HEAD..origin/main)" || us_status="$us_status^"
+        cd "$HOME/.zshus" 2>/dev/null && {
+            bash "./has_local_changes.sh" && us_status="*"
+            bash "./has_remote_updates.sh" && us_status="${us_status}↓$(git rev-list --count HEAD..origin/main)"
         } || us_status="[.zshus not found]"
-	echo "update status: $us_status"
         echo "$us_status" >"$ZSHUS_STATUS_FILE"
-    } &!
+    } 2>/dev/null &!
     ZSHUS_CHECK_PID=$!
 }
 
