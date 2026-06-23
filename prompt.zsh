@@ -120,34 +120,21 @@ zshus_start_check() {
     ZSHUS_CHECK_RUNNING=1
 
     (
-        repo="$HOME/.zshus"
-
         us_status=""
 
-        if ! git -C "$repo" diff-index --quiet HEAD -- 2>/dev/null; then
-            us_status="*"
-        elif [[ -n "$(git -C "$repo" ls-files --others --exclude-standard)" ]]; then
-            us_status="*"
-        fi
-
-        git -C "$repo" fetch origin --quiet 2>/dev/null
-
-        local_commit=$(git -C "$repo" rev-parse HEAD 2>/dev/null)
-        remote_commit=$(git -C "$repo" rev-parse origin/main 2>/dev/null)
-
-        if [[ "$local_commit" != "$remote_commit" ]]; then
-            us_status="${us_status}↓"
-        fi
+        cd "$HOME/.zshus"
+        bash "./has_local_changes.sh" && us_status="*"
+        bash "./has_remote_changes.sh" && us_status="${us_status}↓"
 
         echo "$us_status" >"$ZSHUS_STATUS_FILE"
+        ZSHUS_CHECK_RUNNING=0
     ) >/dev/null 2>&1 &!
 }
 
 zshus_status() {
     [[ -f "$ZSHUS_STATUS_FILE" ]] || return
 
-    local us_status
-    us_status=$(<"$ZSHUS_STATUS_FILE")
+    local us_status=$(<"$ZSHUS_STATUS_FILE")
 
     [[ -z "$us_status" ]] && return
 
