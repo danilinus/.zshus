@@ -82,6 +82,7 @@ if bash "$SCRIPT_DIR/has_remote_updates.sh"; then
             git rebase --abort 2>/dev/null
             echo "❌ Конфликт! Ваши изменения конфликтуют с новыми"
             echo "   Решение: git stash или git reset --hard origin/main"
+            echo "   или usreset - сброс репозитория"
             echo "ℹ️  Пропускаем обновление, ваши изменения сохранены локально"
         fi
     else
