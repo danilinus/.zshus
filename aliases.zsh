@@ -17,3 +17,6 @@ alias usbind='$EDITOR "$HOME/.zshus/bindings.zsh"'
 
 # Проверка скорости конфига
 alias ustime='time zsh -i -c exit'
+
+# Восстановить локальный репозиторий
+alias usreset='git -C /home/user/my-project clean -fd && git -C /home/user/my-project reset --hard HEAD'
