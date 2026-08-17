@@ -178,4 +178,5 @@ precmd() {
     PROMPT="
 ${TITLE_COLOR}${py_env}${NAME_COLOR}%n ${PLEA_COLOR}at ${SYSTEM_COLOR}%m (${sys_nam})${PLEA_COLOR}${zshus_stat} in ${PATH_COLOR}%~${vcs_info_msg_0_}${git_stat}%f
 ${TITLE_COLOR}${EXIT}${SYMBOL} "
+    print -Pn "\e]0;%n@%m: %~\a"
 }
