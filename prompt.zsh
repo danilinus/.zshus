@@ -131,8 +131,9 @@ zstyle ':vcs_info:*' enable git
 zstyle ':vcs_info:git:*' formats ' %F{10}(%b)%f'
 zstyle ':vcs_info:git:*' actionformats ' %F{10}(%b|%a)%f'
 
+# Вызывается после vcs_info: пустой vcs_info_msg_0_ значит, что мы не в репозитории
 git_dirty() {
-    command git rev-parse --git-dir >/dev/null 2>&1 || return
+    [[ -n "$vcs_info_msg_0_" ]] || return
     if ! command git diff --quiet HEAD 2>/dev/null; then
         echo "%F{11}*%f"
     fi
@@ -190,11 +191,67 @@ zshus_status() {
     [[ -n "$us_status" ]] && echo " [us${us_status}]"
 }
 
+# ---------- Асинхронная часть промпта ----------
+# Всё, что вызывает git (ветка, *, статус zshus), считается в фоновом процессе.
+# Промпт рисуется сразу с прошлыми значениями, а когда процесс ответит,
+# zle вызовет _zshus_async_done и промпт перерисуется, только если что-то изменилось
+typeset -gi _zshus_async_fd=0
+typeset -g _zshus_async_pwd="" git_info="" git_stat="" zshus_stat=""
+
+_zshus_async_worker() {
+    vcs_info
+    local dirty=$(git_dirty) us=$(zshus_status)
+    # Пишем всё одним вызовом: обработчик просыпается на первых данных
+    # и не должен ждать (блокируя ввод), пока считается остальное
+    print -r -- "$vcs_info_msg_0_"$'\n'"$dirty"$'\n'"$us"
+}
+
+_zshus_async_start() {
+    # Предыдущий запрос ещё не ответил — его результат уже не нужен
+    if (( _zshus_async_fd )); then
+        zle -F $_zshus_async_fd 2>/dev/null
+        exec {_zshus_async_fd}<&-
+        _zshus_async_fd=0
+    fi
+
+    # В другом каталоге ветка от старого каталога была бы неправдой
+    if [[ "$PWD" != "$_zshus_async_pwd" ]]; then
+        _zshus_async_pwd=$PWD
+        git_info="" git_stat=""
+    fi
+
+    exec {_zshus_async_fd}< <(_zshus_async_worker)
+    zle -F -w $_zshus_async_fd _zshus_async_done
+}
+
+_zshus_async_done() {
+    local fd=$1 vcs="" dirty="" us=""
+    {
+        IFS= read -r vcs
+        IFS= read -r dirty
+        IFS= read -r us
+    } <&$fd
+    zle -F $fd
+    exec {fd}<&-
+    (( fd == _zshus_async_fd )) && _zshus_async_fd=0
+
+    [[ "$vcs" == "$git_info" && "$dirty" == "$git_stat" && "$us" == "$zshus_stat" ]] && return
+    git_info=$vcs git_stat=$dirty zshus_stat=$us
+    _zshus_build_prompt
+    zle reset-prompt
+}
+zle -N _zshus_async_done
+
+_zshus_build_prompt() {
+    PROMPT="
+${TITLE_COLOR}${py_env}${NAME_COLOR}%n ${PLEA_COLOR}at ${SYSTEM_COLOR}%m (${ZSHUS_SYSTEM_NAME})${PLEA_COLOR}${zshus_stat} in ${PATH_COLOR}%~${git_info}${git_stat}%f
+${TITLE_COLOR}${EXIT}${SYMBOL} "
+}
+
 # ---------- Prompt ----------
 precmd() {
     local exit_code=$?
     zshus_fetch
-    vcs_info
 
     # error code
     if [[ $exit_code -ne 0 ]]; then
@@ -222,10 +279,16 @@ precmd() {
     : ${PLEA_COLOR:='%F{8}'}
     python_env
     py_env=$REPLY
-    git_stat=$(git_dirty)
-    zshus_stat=$(zshus_status)
-    PROMPT="
-${TITLE_COLOR}${py_env}${NAME_COLOR}%n ${PLEA_COLOR}at ${SYSTEM_COLOR}%m (${ZSHUS_SYSTEM_NAME})${PLEA_COLOR}${zshus_stat} in ${PATH_COLOR}%~${vcs_info_msg_0_}${git_stat}%f
-${TITLE_COLOR}${EXIT}${SYMBOL} "
+
+    if [[ -o zle ]]; then
+        _zshus_async_start
+    else
+        # Без zle (нет терминала) перерисовать промпт нельзя — считаем сразу
+        vcs_info
+        git_info=$vcs_info_msg_0_
+        git_stat=$(git_dirty)
+        zshus_stat=$(zshus_status)
+    fi
+    _zshus_build_prompt
     print -Pn "\e]0;%n@%m: %~\a"
 }
