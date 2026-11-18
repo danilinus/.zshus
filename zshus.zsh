@@ -75,6 +75,9 @@ setopt HIST_IGNORE_ALL_DUPS
 
 source "$ZSHUS/plugins/fzf-tab/fzf-tab.plugin.zsh"
 source "$ZSHUS/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+# Иначе виджеты перепривязываются перед каждым промптом (~50 мс на rpi).
+# Виджеты, созданные до первого промпта (в т.ч. в ~/.zshrc), подхватываются и так
+ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 source "$ZSHUS/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # ---------- Local overrides ----------
