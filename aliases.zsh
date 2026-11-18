@@ -27,6 +27,5 @@ usreset() {
     }
     echo
     git -C "$HOME/.zshus" clean -fd &&
-        git -C "$HOME/.zshus" reset --hard HEAD &&
-        rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/zshus.status"
+        git -C "$HOME/.zshus" reset --hard HEAD
 }

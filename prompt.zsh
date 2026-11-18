@@ -149,46 +149,49 @@ python_env() {
     fi
 }
 
-# ---------- Фоновая проверка обновления ----------
-ZSHUS_STATUS_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/zshus.status"
-ZSHUS_CHECK_PID=0
-ZSHUS_CHECK_DONE=0
+# ---------- Статус репозитория zshus ----------
+# Сеть нужна только для git fetch: он идёт в фоне не чаще раза в 10 минут.
+# Остальное (правки, ↑/↓ относительно origin/main) — локальные git-команды,
+# поэтому считается на каждом промпте и всегда соответствует текущему состоянию
+ZSHUS_FETCH_INTERVAL=600
+typeset -i ZSHUS_FETCH_AT=-1
 
-zshus_start_check() {
-    [[ -f "$ZSHUS_STATUS_FILE" && $ZSHUS_CHECK_DONE -eq 1 ]] && return
-    [[ $ZSHUS_CHECK_PID -ne 0 ]] && kill -0 $ZSHUS_CHECK_PID 2>/dev/null && return
+zshus_fetch() {
+    local dir="${ZSHUS:-$HOME/.zshus}"
+    (( ZSHUS_FETCH_AT >= 0 && SECONDS - ZSHUS_FETCH_AT < ZSHUS_FETCH_INTERVAL )) && return
+    ZSHUS_FETCH_AT=$SECONDS
 
-    ZSHUS_CHECK_DONE=1
+    # Другая сессия недавно уже обновила origin/main
+    local -a fresh=("$dir/.git/FETCH_HEAD"(N.mm-$((ZSHUS_FETCH_INTERVAL / 60))))
+    (( ${#fresh} )) && return
 
-    {
-        us_status=""
-        cd "$HOME/.zshus" 2>/dev/null && {
-            if bash "./has_local_changes.sh" 2>/dev/null; then
-                us_status="*"
-            fi
-            if bash "./has_remote_updates.sh" 2>/dev/null; then
-                us_status="${us_status}↓$(git rev-list --count HEAD..origin/main)"
-            fi
-        } || us_status="[.zshus not found]"
-        echo "$us_status" >"$ZSHUS_STATUS_FILE"
-    } 2>/dev/null &!
-    ZSHUS_CHECK_PID=$!
+    GIT_TERMINAL_PROMPT=0 command git -C "$dir" fetch --quiet origin &>/dev/null &!
 }
 
 zshus_status() {
-    [[ -f "$ZSHUS_STATUS_FILE" ]] || return
+    local dir="${ZSHUS:-$HOME/.zshus}"
+    [[ -d "$dir/.git" ]] || {
+        echo " [.zshus not found]"
+        return
+    }
 
-    local us_status=$(<"$ZSHUS_STATUS_FILE")
+    local us_status="" counts ahead behind
+    # --no-optional-locks: не мешаем git-командам, запущенным в ~/.zshus
+    [[ -n "$(command git --no-optional-locks -C "$dir" status --porcelain 2>/dev/null)" ]] && us_status="*"
 
-    [[ -z "$us_status" ]] && return
+    # ↑ — локальные коммиты, которых нет в origin/main, ↓ — новые коммиты в origin/main
+    counts=$(command git -C "$dir" rev-list --left-right --count HEAD...origin/main 2>/dev/null)
+    read -r ahead behind <<<"$counts"
+    (( ahead > 0 )) && us_status+="↑$ahead"
+    (( behind > 0 )) && us_status+="↓$behind"
 
-    echo " [us${us_status}]"
+    [[ -n "$us_status" ]] && echo " [us${us_status}]"
 }
 
 # ---------- Prompt ----------
 precmd() {
     local exit_code=$?
-    zshus_start_check
+    zshus_fetch
     vcs_info
 
     # error code
