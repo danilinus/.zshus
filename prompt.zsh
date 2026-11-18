@@ -95,7 +95,7 @@ zstyle ':vcs_info:git:*' actionformats ' %F{10}(%b|%a)%f'
 
 git_dirty() {
     command git rev-parse --git-dir >/dev/null 2>&1 || return
-    if ! command git diff-index --quiet --cached HEAD 2>/dev/null; then
+    if ! command git diff --quiet HEAD 2>/dev/null; then
         echo "%F{11}*%f"
     fi
 }
