@@ -47,30 +47,32 @@ check_truecolor_support() {
     (( ZSHUS_TRUECOLOR ))
 }
 
+# Без uname/grep/getprop: файлы читаем через $(<file), ОС берём из $OSTYPE
 get_system_name() {
-    local os_type=""
+    local os_type="" os_release="" proc_version=""
+    [[ -r /etc/os-release ]] && os_release=${(L)"$(</etc/os-release)"}
+    [[ -r /proc/version ]] && proc_version=${(L)"$(</proc/version)"}
 
-    if [[ "$(uname -o 2>/dev/null)" == "Android" ]] ||
+    if [[ "$OSTYPE" == linux-android* ]] ||
         [[ -d /system/app ]] ||
         [[ -d /data/data/com.termux ]] ||
-        [[ -n "$PREFIX" && "$PREFIX" == "/data/data/com.termux/files/usr" ]] ||
-        getprop ro.build.version.sdk &>/dev/null; then
+        [[ "$PREFIX" == "/data/data/com.termux/files/usr" ]]; then
         os_type="android"
-    elif grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then
+    elif [[ "$proc_version" == *(microsoft|wsl)* ]]; then
         os_type="wsl"
     elif [ -f /etc/rpi-issue ]; then
         os_type="raspbian"
-    elif grep -qi "ubuntu" /etc/os-release 2>/dev/null; then
+    elif [[ "$os_release" == *ubuntu* ]]; then
         os_type="ubuntu"
-    elif grep -qi "debian" /etc/os-release 2>/dev/null; then
+    elif [[ "$os_release" == *debian* ]]; then
         os_type="debian"
-    elif grep -qi "arch" /etc/os-release 2>/dev/null; then
+    elif [[ "$os_release" == *arch* ]]; then
         os_type="arch"
-    elif grep -qi "fedora" /etc/os-release 2>/dev/null; then
+    elif [[ "$os_release" == *fedora* ]]; then
         os_type="fedora"
     elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
         os_type="windows"
-    elif [[ "$(uname)" == "Darwin" ]]; then
+    elif [[ "$OSTYPE" == darwin* ]]; then
         os_type="macos"
     else
         os_type="unknown"
