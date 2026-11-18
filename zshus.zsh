@@ -18,7 +18,15 @@ setopt INTERACTIVE_COMMENTS
 
 # ---------- Fast completion ----------
 autoload -Uz compinit
-compinit
+# полная проверка дампа раз в сутки, в остальное время быстрый запуск (-C)
+_zshus_zcompdump="${XDG_CACHE_HOME:-$HOME/.cache}/zshus.zcompdump"
+_zshus_fresh=("$_zshus_zcompdump"(N.mh-24))
+if (( ${#_zshus_fresh} )); then
+    compinit -C -d "$_zshus_zcompdump"
+else
+    compinit -d "$_zshus_zcompdump"
+fi
+unset _zshus_zcompdump _zshus_fresh
 
 setopt PROMPT_SUBST
 
