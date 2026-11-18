@@ -82,7 +82,7 @@ if bash "$SCRIPT_DIR/has_remote_updates.sh"; then
         # Есть локальные изменения — пробуем rebase
         echo "⚠️ Есть локальные изменения"
 
-        if git pull --rebase origin main 2>/dev/null; then
+        if git pull --rebase --autostash origin main 2>/dev/null; then
             echo "✅ Репозиторий обновлён, ваши изменения сохранены"
             UPDATE=true
         else
