@@ -76,7 +76,26 @@ setopt HIST_IGNORE_ALL_DUPS
 # ---------- Plugins ----------
 
 source "$ZSHUS/plugins/fzf-tab/fzf-tab.plugin.zsh"
-source "$ZSHUS/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+
+# zsh-syntax-highlighting грузится ~15 мс, поэтому подключаем его после отрисовки
+# первого промпта: /dev/null всегда готов к чтению, и zle вызовет обработчик,
+# как только начнёт ждать ввода. Заодно он оказывается последним, как требует плагин
+if [[ -o zle ]]; then
+    _zshus_load_highlighting() {
+        local fd=$1
+        zle -F $fd
+        exec {fd}<&-
+        source "$ZSHUS/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+        zle -R
+    }
+    zle -N _zshus_load_highlighting
+    exec {_zshus_fd}</dev/null
+    zle -F -w $_zshus_fd _zshus_load_highlighting
+    unset _zshus_fd
+else
+    source "$ZSHUS/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+fi
+
 # Иначе виджеты перепривязываются перед каждым промптом (~50 мс на rpi).
 # Виджеты, созданные до первого промпта (в т.ч. в ~/.zshrc), подхватываются и так
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1
