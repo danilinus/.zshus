@@ -29,6 +29,8 @@ else
     # без touch полная проверка шла бы при каждом запуске
     touch "$_zshus_zcompdump"
 fi
+# Скомпилированный дамп (.zwc) загружается быстрее, compinit подхватит его сам
+[[ "$_zshus_zcompdump.zwc" -nt "$_zshus_zcompdump" ]] || zcompile "$_zshus_zcompdump" 2>/dev/null
 unset _zshus_zcompdump _zshus_fresh
 
 setopt PROMPT_SUBST
