@@ -73,3 +73,7 @@ setopt HIST_IGNORE_ALL_DUPS
 source "$ZSHUS/plugins/fzf-tab/fzf-tab.plugin.zsh"
 source "$ZSHUS/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 source "$ZSHUS/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
+
+# ---------- Local overrides ----------
+
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
