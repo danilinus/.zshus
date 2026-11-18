@@ -85,7 +85,7 @@ get_system_color() {
         truecolor_support=true
     fi
 
-    local os_type=$(get_system_name)
+    local os_type=${ZSHUS_SYSTEM_NAME:-$(get_system_name)}
 
     # Возвращаем цвет в зависимости от ОС и поддержки TrueColor
     case "$os_type" in
@@ -139,13 +139,15 @@ git_dirty() {
 }
 
 # ---------- Python env ----------
+# Результат в REPLY, чтобы не запускать $(...) на каждом промпте
 python_env() {
+    REPLY=""
     if [[ -n "$VIRTUAL_ENV" ]]; then
-        echo "%F{6}($(basename $VIRTUAL_ENV))%f "
+        REPLY="%F{6}(${VIRTUAL_ENV:t})%f "
     elif [[ -n "$CONDA_DEFAULT_ENV" ]]; then
-        echo "%F{6}($CONDA_DEFAULT_ENV)%f "
+        REPLY="%F{6}($CONDA_DEFAULT_ENV)%f "
     elif [[ -n "$PYENV_VERSION" ]]; then
-        echo "%F{6}($PYENV_VERSION)%f "
+        REPLY="%F{6}($PYENV_VERSION)%f "
     fi
 }
 
@@ -211,17 +213,19 @@ precmd() {
     : ${TITLE_COLOR:='%F{15}'}
     : ${NAME_COLOR:='%F{10}'}
     : ${PATH_COLOR:='%F{11}'}
+    # ОС за время сессии не меняется, определяем её один раз
+    : ${ZSHUS_SYSTEM_NAME:=$(get_system_name)}
     if [[ -z "$SYSTEM_COLOR" ]]; then
         check_truecolor_support # заполняет кэш в основном shell
         SYSTEM_COLOR="%{$(apply_system_color)%}"
     fi
     : ${PLEA_COLOR:='%F{8}'}
-    py_env=$(python_env)
+    python_env
+    py_env=$REPLY
     git_stat=$(git_dirty)
-    sys_nam=$(get_system_name)
     zshus_stat=$(zshus_status)
     PROMPT="
-${TITLE_COLOR}${py_env}${NAME_COLOR}%n ${PLEA_COLOR}at ${SYSTEM_COLOR}%m (${sys_nam})${PLEA_COLOR}${zshus_stat} in ${PATH_COLOR}%~${vcs_info_msg_0_}${git_stat}%f
+${TITLE_COLOR}${py_env}${NAME_COLOR}%n ${PLEA_COLOR}at ${SYSTEM_COLOR}%m (${ZSHUS_SYSTEM_NAME})${PLEA_COLOR}${zshus_stat} in ${PATH_COLOR}%~${vcs_info_msg_0_}${git_stat}%f
 ${TITLE_COLOR}${EXIT}${SYMBOL} "
     print -Pn "\e]0;%n@%m: %~\a"
 }
