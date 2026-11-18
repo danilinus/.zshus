@@ -25,6 +25,9 @@ if (( ${#_zshus_fresh} )); then
     compinit -C -d "$_zshus_zcompdump"
 else
     compinit -d "$_zshus_zcompdump"
+    # compinit не перезаписывает дамп, если набор функций не изменился,
+    # без touch полная проверка шла бы при каждом запуске
+    touch "$_zshus_zcompdump"
 fi
 unset _zshus_zcompdump _zshus_fresh
 
