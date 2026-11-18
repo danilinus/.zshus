@@ -149,9 +149,8 @@ zshus_status() {
 
 # ---------- Prompt ----------
 precmd() {
-    zshus_start_check
-
     local exit_code=$?
+    zshus_start_check
     vcs_info
 
     # error code
