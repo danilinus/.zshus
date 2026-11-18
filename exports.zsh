@@ -13,14 +13,23 @@ if [[ "$(uname -o 2>/dev/null)" != "Android" ]]; then
     unset _zshus_lang
 fi
 
-PATH="$PATH:$HOME/bin"
-PATH="$PATH:$HOME/.local/bin"
-PATH="$PATH:/usr/local/bin"
-PATH="$PATH:/usr/local/bin/BashScripts"
+# Дубликаты в PATH убираем, несуществующие каталоги не добавляем
+typeset -U path PATH
+for _zshus_dir in "$HOME/bin" "$HOME/.local/bin" /usr/local/bin /usr/local/bin/BashScripts; do
+    [[ -d "$_zshus_dir" ]] && path+=("$_zshus_dir")
+done
+unset _zshus_dir
 
-export PATH="$PATH"
-export CPPFLAGS="-I/usr/local/opt/binutils/include"
-export LDFLAGS="-I/usr/local/opt/binutils/lib"
+export PATH
 export EDITOR='nano'
-export ANDROID_SDK_ROOT="/mnt/c/Users/danila/AppData/Local/Android/Sdk"
-export ANDROID_NDK_ROOT="/mnt/c/Users/danila/AppData/Local/Android/Sdk/ndk/29.0.14206865"
+
+if [[ -d /usr/local/opt/binutils ]]; then
+    export CPPFLAGS="-I/usr/local/opt/binutils/include"
+    export LDFLAGS="-L/usr/local/opt/binutils/lib"
+fi
+
+# Android SDK из Windows (WSL)
+if [[ -d /mnt/c/Users/danila/AppData/Local/Android/Sdk ]]; then
+    export ANDROID_SDK_ROOT="/mnt/c/Users/danila/AppData/Local/Android/Sdk"
+    export ANDROID_NDK_ROOT="$ANDROID_SDK_ROOT/ndk/29.0.14206865"
+fi
