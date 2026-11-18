@@ -77,29 +77,37 @@ setopt HIST_IGNORE_ALL_DUPS
 
 source "$ZSHUS/plugins/fzf-tab/fzf-tab.plugin.zsh"
 
-# zsh-syntax-highlighting грузится ~15 мс, поэтому подключаем его после отрисовки
-# первого промпта: /dev/null всегда готов к чтению, и zle вызовет обработчик,
-# как только начнёт ждать ввода. Заодно он оказывается последним, как требует плагин
+# Иначе виджеты перепривязываются перед каждым промптом (~50 мс на rpi)
+ZSH_AUTOSUGGEST_MANUAL_REBIND=1
+source "$ZSHUS/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
+# Плагин привязывает виджеты в precmd, т.е. до первого промпта — запустим сами позже
+add-zsh-hook -d precmd _zsh_autosuggest_start
+
+# Привязка виджетов autosuggestions (~80 мс на rpi) и загрузка
+# zsh-syntax-highlighting (~15 мс) откладываются до отрисовки первого промпта:
+# /dev/null всегда готов к чтению, и zle вызовет обработчик, как только начнёт
+# ждать ввода. Нажатые за это время клавиши не теряются. Заодно оба плагина видят
+# виджеты из ~/.zshrc, а highlighting загружается последним, как он требует
+_zshus_load_deferred() {
+    _zsh_autosuggest_start
+    source "$ZSHUS/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+}
+
 if [[ -o zle ]]; then
-    _zshus_load_highlighting() {
+    _zshus_load_deferred_widget() {
         local fd=$1
         zle -F $fd
         exec {fd}<&-
-        source "$ZSHUS/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+        _zshus_load_deferred
         zle -R
     }
-    zle -N _zshus_load_highlighting
+    zle -N _zshus_load_deferred_widget
     exec {_zshus_fd}</dev/null
-    zle -F -w $_zshus_fd _zshus_load_highlighting
+    zle -F -w $_zshus_fd _zshus_load_deferred_widget
     unset _zshus_fd
 else
-    source "$ZSHUS/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+    _zshus_load_deferred
 fi
-
-# Иначе виджеты перепривязываются перед каждым промптом (~50 мс на rpi).
-# Виджеты, созданные до первого промпта (в т.ч. в ~/.zshrc), подхватываются и так
-ZSH_AUTOSUGGEST_MANUAL_REBIND=1
-source "$ZSHUS/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # ---------- Local overrides ----------
 
