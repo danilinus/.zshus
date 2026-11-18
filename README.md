@@ -6,7 +6,7 @@
 
 - **Промпт** с пользователем, хостом и названием ОС. Цвет ОС выбирается автоматически, в терминалах с TrueColor используются точные цвета дистрибутива, иначе — ближайший 16/256-цветный.
 - Код возврата последней команды, активное Python-окружение (venv/conda/pyenv), ветка git и `*` при незакоммиченных изменениях.
-- Индикатор состояния самого конфига: `[us*↓2]` — есть локальные правки (`*`) и/или обновления на GitHub (`↓N` коммитов).
+- Индикатор состояния самого конфига, например `[us*↑1↓2]`: `*` — незакоммиченные правки, `↑N` — коммиты, ещё не отправленные в `origin/main`, `↓N` — новые коммиты на GitHub. Локальное состояние обновляется на каждом промпте, `git fetch` выполняется в фоне не чаще раза в 10 минут.
 - Плагины (git submodules): [fzf-tab](https://github.com/Aloxaf/fzf-tab), [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions), [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting).
 - Подсветка `man` через [bat](https://github.com/sharkdp/bat), если он установлен.
 - Автоопределение Homebrew (macOS и Linux).
@@ -56,7 +56,7 @@ us        # то же самое: zup, zshus
 
 - Машинно-специфичные настройки кладите в `~/.zshrc.local` — файл подключается в конце и не попадает в git.
 - Цвета промпта переопределяются переменными `TITLE_COLOR`, `NAME_COLOR`, `PATH_COLOR`, `SYSTEM_COLOR`, `PLEA_COLOR` (задайте их до загрузки конфига).
-- Файл статуса обновлений хранится в `${XDG_CACHE_HOME:-~/.cache}/zshus.status`.
+- Интервал фонового `git fetch` задаётся в секундах переменной `ZSHUS_FETCH_INTERVAL` (по умолчанию 600).
 
 ## Структура
 
@@ -68,10 +68,15 @@ bindings.zsh    привязки клавиш
 prompt.zsh      промпт, определение ОС и TrueColor, статус обновлений
 brew.zsh        автоопределение Homebrew
 install.sh      установка и обновление
-has_local_changes.sh / has_remote_updates.sh   проверки для промпта и install.sh
+has_local_changes.sh / has_remote_updates.sh   проверки для install.sh
 plugins/        плагины (submodules)
 ```
 
 ## Проверка поддержки TrueColor
 
-Функция `check_truecolor_support` (`prompt.zsh`) смотрит на `COLORTERM`, `TERM` и `TERM_PROGRAM`. Terminal.app в macOS поддерживает только 256 цветов и определяется как не-TrueColor; для iTerm2, Ghostty, WezTerm, kitty, Alacritty, Windows Terminal, VS Code и т.п. включаются 24-битные цвета.
+Функция `check_truecolor_support` (`prompt.zsh`) работает в два шага:
+
+1. Быстрая проверка переменных `COLORTERM`, `TERM`, `TERM_PROGRAM`, `WT_SESSION`, а в tmux — `client_termfeatures`.
+2. Если переменные ничего не говорят (типично для ssh: они не передаются на удалённую машину), опрашивается сам терминал. zshus включает цвет `38;2;1;2;3` и запрашивает текущие атрибуты через DECRQSS. Терминал с TrueColor возвращает тот же цвет. Следом отправляется DA1, на который отвечают все терминалы, поэтому даже без ответа на DECRQSS задержки нет.
+
+Результат запоминается на сессию и экспортируется как `COLORTERM=truecolor` для дочерних программ. Чтобы проверка через ssh работала без опроса, можно передавать `COLORTERM` с клиента (`SendEnv COLORTERM` в `~/.ssh/config`, на сервере `AcceptEnv COLORTERM`).

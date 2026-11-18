@@ -9,9 +9,10 @@
 ## Структура
 
 - `zshus.zsh` — точка входа, порядок загрузки: `exports` → `aliases` → `bindings` → `prompt` → `brew`, затем опции, история, плагины, `~/.zshrc.local`.
-- `prompt.zsh` — `precmd`, определение ОС (`get_system_name`), цвета (`check_truecolor_support`, `get_system_color`), фоновая проверка обновлений.
+- `prompt.zsh` — `precmd`, определение ОС (`get_system_name`), цвета (`check_truecolor_support`, `get_system_color`), статус репозитория (`zshus_status` на каждом промпте, `zshus_fetch` в фоне).
+- `check_truecolor_support` кэширует результат в `ZSHUS_TRUECOLOR`; первый вызов должен быть в основном shell, не внутри `$(...)`. Не возвращать проверку через `tput colors`: 256 цветов — не TrueColor.
 - `install.sh` — bash-скрипт установки и обновления (`us`).
-- `has_local_changes.sh`, `has_remote_updates.sh` — работают через код возврата: `0` = «да, есть», `1` = «нет». Не менять семантику.
+- `has_local_changes.sh`, `has_remote_updates.sh` — используются в `install.sh`, работают через код возврата: `0` = «да, есть», `1` = «нет». Не менять семантику.
 - `plugins/` — git submodules. **Не редактировать**, обновляются через `git submodule update`.
 
 ## Проверка изменений
@@ -24,11 +25,10 @@ bash -n install.sh has_local_changes.sh has_remote_updates.sh
 zsh -i -c exit        # не должно быть ни вывода, ни ошибок
 ```
 
-Для проверки определения TrueColor:
+Определение TrueColor опрашивает терминал, поэтому проверять его нужно в настоящем терминале (через `ssh -t`), а не в выводе без tty:
 
 ```bash
-TERM=xterm-256color COLORTERM= TERM_PROGRAM=Apple_Terminal \
-  zsh -c 'source prompt.zsh; check_truecolor_support && echo yes || echo no'   # no
+ssh -t <host> "env -u COLORTERM zsh -c 'source ~/.zshus/prompt.zsh; check_truecolor_support && echo yes || echo no'"
 ```
 
 ## Соглашения
