@@ -13,7 +13,7 @@ if command -v bat &>/dev/null; then
     export MANROFFOPT="-c"
 fi
 
-# igonore comments
+# ignore comments
 setopt INTERACTIVE_COMMENTS
 
 # ---------- Fast completion ----------
