@@ -1,12 +1,50 @@
-check_truecolor_support() {
-    [[ "$COLORTERM" =~ ^(truecolor|24bit)$ ]] && return 0
-    # Terminal.app поддерживает только 256 цветов, несмотря на TERM=xterm-256color
-    [[ "$TERM_PROGRAM" == "Apple_Terminal" ]] && return 1
+# Спрашиваем сам терминал: включаем цвет 38;2;1;2;3 и запрашиваем текущий SGR (DECRQSS).
+# Терминал с TrueColor вернёт этот же цвет, остальные — другой цвет или ничего.
+# Следом отправляем DA1 (\e[c): на него отвечают все терминалы, поэтому таймаут
+# не ждём, а читаем ответ до конца DA1. Работает и через ssh, где переменных окружения нет.
+_zshus_query_truecolor() {
+    [[ -t 0 && -t 1 && "$TERM" != (dumb|linux) ]] || return 1
+
+    local stty_saved reply="" char
+    stty_saved=$(stty -g 2>/dev/null) || return 1
+    stty -echo -icanon 2>/dev/null
+
+    print -rn -- $'\e[38;2;1;2;3m\eP$qm\e\\\e[0m\e[c'
+    while read -rk 1 -t 0.5 -u 0 char; do
+        reply+=$char
+        [[ "$reply" == *$'\e[?'*c ]] && break
+    done
+
+    stty "$stty_saved" 2>/dev/null
+
+    # Ответ: \eP1$r<SGR>m\e\\, разделители бывают как ";", так и ":"
+    [[ "${reply//:/;}" == *'$r'*'38;2;'(|';'|'0;')'1;2;3'[\;m]* ]]
+}
+
+_zshus_detect_truecolor() {
+    [[ "$COLORTERM" == (truecolor|24bit) ]] && return 0
     [[ "$TERM" =~ ^(xterm-kitty|xterm-ghostty|alacritty|wezterm|foot|contour|rio) ]] && return 0
     [[ "$TERM_PROGRAM" =~ ^(vscode|Hyper|Tabby|Warp|iTerm.app|ghostty|WezTerm)$ ]] && return 0
     [[ -n "$WT_SESSION" || "$TERM_PROGRAM" == "Windows Terminal" ]] && return 0
-    # tput colors считает 256-цветные терминалы, но это не TrueColor
-    return 1
+    if [[ -n "$TMUX" ]]; then
+        [[ "$(tmux display-message -p '#{client_termfeatures}' 2>/dev/null)" == *RGB* ]]
+        return
+    fi
+    # Переменных нет (ssh, Terminal.app и т.п.) — спрашиваем терминал.
+    # tput colors тут не подходит: 256 цветов — это ещё не TrueColor
+    _zshus_query_truecolor || return 1
+    # Сообщаем результат дочерним программам (vim, bat, вложенный zsh)
+    export COLORTERM=truecolor
+}
+
+# Результат кэшируется в ZSHUS_TRUECOLOR, терминал опрашивается один раз за сессию.
+# Первый вызов должен быть в основном shell, а не в $(...), иначе кэш потеряется
+check_truecolor_support() {
+    if [[ -z "$ZSHUS_TRUECOLOR" ]]; then
+        ZSHUS_TRUECOLOR=0
+        _zshus_detect_truecolor && ZSHUS_TRUECOLOR=1
+    fi
+    (( ZSHUS_TRUECOLOR ))
 }
 
 get_system_name() {
@@ -170,7 +208,10 @@ precmd() {
     : ${TITLE_COLOR:='%F{15}'}
     : ${NAME_COLOR:='%F{10}'}
     : ${PATH_COLOR:='%F{11}'}
-    : ${SYSTEM_COLOR:=%{$(apply_system_color)%}}
+    if [[ -z "$SYSTEM_COLOR" ]]; then
+        check_truecolor_support # заполняет кэш в основном shell
+        SYSTEM_COLOR="%{$(apply_system_color)%}"
+    fi
     : ${PLEA_COLOR:='%F{8}'}
     py_env=$(python_env)
     git_stat=$(git_dirty)
