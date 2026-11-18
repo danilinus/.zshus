@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
-git fetch origin >/dev/null 2>&1 || exit 1
+GIT_TERMINAL_PROMPT=0 git fetch origin >/dev/null 2>&1 || exit 1
 
-LOCAL_COMMIT=$(git rev-parse HEAD)
-REMOTE_COMMIT=$(git rev-parse origin/main)
+# Обновление есть только если origin/main содержит коммиты, которых нет локально
+# (локальные неотправленные коммиты обновлением не считаются)
+BEHIND=$(git rev-list --count HEAD..origin/main 2>/dev/null) || exit 1
 
-if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+if [ "$BEHIND" -gt 0 ]; then
     exit 0    # есть обновления
 else
     exit 1    # обновлений нет
