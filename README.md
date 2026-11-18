@@ -59,6 +59,7 @@ us        # то же самое: zup, zshus
 - Цвета промпта переопределяются переменными `TITLE_COLOR`, `NAME_COLOR`, `PATH_COLOR`, `SYSTEM_COLOR`, `PLEA_COLOR` (задайте их до загрузки конфига).
 - Интервал фонового `git fetch` задаётся в секундах переменной `ZSHUS_FETCH_INTERVAL` (по умолчанию 600).
 - Кэши (дамп автодополнения, вывод `brew shellenv`) лежат в `${XDG_CACHE_HOME:-~/.cache}`, их можно удалить в любой момент — они пересоздадутся.
+- Серая подсказка берётся из истории, а если там ничего нет — из автодополнения (`git pu` → `git pull`). Порядок задаётся переменной `ZSH_AUTOSUGGEST_STRATEGY` (по умолчанию `(history completion)`), например `ZSH_AUTOSUGGEST_STRATEGY=(history)` в `~/.zshrc.local`.
 - zsh-autosuggestions привязывается к виджетам один раз, после первого промпта (`ZSH_AUTOSUGGEST_MANUAL_REBIND`). Виджеты из `~/.zshrc` подхватываются автоматически. Если создаёте виджет позже, вызовите `_zsh_autosuggest_bind_widgets`.
 
 ## Структура

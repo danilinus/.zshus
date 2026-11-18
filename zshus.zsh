@@ -79,6 +79,10 @@ source "$ZSHUS/plugins/fzf-tab/fzf-tab.plugin.zsh"
 
 # Иначе виджеты перепривязываются перед каждым промптом (~50 мс на rpi)
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1
+# Подсказка из истории (вся команда), если там пусто — из автодополнения (одно
+# слово, ~100 мс на rpi, считается в фоне). Наоборот хуже: автодополнение почти
+# всегда что-то находит и вытесняет историю первым вариантом по алфавиту
+(( ${+ZSH_AUTOSUGGEST_STRATEGY} )) || ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 source "$ZSHUS/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 # Плагин привязывает виджеты в precmd, т.е. до первого промпта — запустим сами позже
 add-zsh-hook -d precmd _zsh_autosuggest_start
