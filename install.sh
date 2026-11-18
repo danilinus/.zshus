@@ -8,12 +8,19 @@ command -v git &>/dev/null || {
 # Проверка и установка Zsh
 command -v zsh &>/dev/null || {
     echo "Устанавливаю Zsh..."
+
+    # Не root — ставим пакеты через sudo
+    SUDO=""
+    if [ "$(id -u)" -ne 0 ] && command -v sudo &>/dev/null; then
+        SUDO="sudo"
+    fi
+
     if command -v apt &>/dev/null; then
-        apt update && apt install zsh -y
+        $SUDO apt update && $SUDO apt install zsh -y
     elif command -v dnf &>/dev/null; then
-        dnf install zsh -y
+        $SUDO dnf install zsh -y
     elif command -v pacman &>/dev/null; then
-        pacman -S zsh --noconfirm
+        $SUDO pacman -S zsh --noconfirm
     elif command -v brew &>/dev/null; then
         brew install zsh
     else
