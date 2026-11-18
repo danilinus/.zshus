@@ -153,7 +153,7 @@ python_env() {
 # Сеть нужна только для git fetch: он идёт в фоне не чаще раза в 10 минут.
 # Остальное (правки, ↑/↓ относительно origin/main) — локальные git-команды,
 # поэтому считается на каждом промпте и всегда соответствует текущему состоянию
-ZSHUS_FETCH_INTERVAL=600
+: ${ZSHUS_FETCH_INTERVAL:=600}
 typeset -i ZSHUS_FETCH_AT=-1
 
 zshus_fetch() {
