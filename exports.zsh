@@ -1,16 +1,17 @@
 # Подавление предупреждений setlocal для Termux
 if [[ "$(uname -o 2>/dev/null)" != "Android" ]]; then
     # export всегда успешен, поэтому наличие локали проверяем через locale -a
-    if locale -a 2>/dev/null | grep -qiE '^ru_RU\.utf-?8$'; then
+    _zshus_locales=$'\n'"$(locale -a 2>/dev/null)"$'\n'
+    if [[ "$_zshus_locales" == *$'\n'ru_RU.(utf8|UTF-8)$'\n'* ]]; then
         _zshus_lang="ru_RU.UTF-8"
-    elif locale -a 2>/dev/null | grep -qiE '^C\.utf-?8$'; then
+    elif [[ "$_zshus_locales" == *$'\n'C.(utf8|UTF-8)$'\n'* ]]; then
         _zshus_lang="C.UTF-8"
     fi
     if [[ -n "$_zshus_lang" ]]; then
         export LANG="$_zshus_lang"
         export LC_ALL="$_zshus_lang"
     fi
-    unset _zshus_lang
+    unset _zshus_locales _zshus_lang
 fi
 
 # Дубликаты в PATH убираем, несуществующие каталоги не добавляем
