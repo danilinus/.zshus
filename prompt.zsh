@@ -170,7 +170,7 @@ precmd() {
     : ${TITLE_COLOR:='%F{15}'}
     : ${NAME_COLOR:='%F{10}'}
     : ${PATH_COLOR:='%F{11}'}
-    : ${SYSTEM_COLOR:=$(apply_system_color)}
+    : ${SYSTEM_COLOR:=%{$(apply_system_color)%}}
     : ${PLEA_COLOR:='%F{8}'}
     py_env=$(python_env)
     git_stat=$(git_dirty)
