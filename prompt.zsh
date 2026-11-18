@@ -1,9 +1,11 @@
 check_truecolor_support() {
     [[ "$COLORTERM" =~ ^(truecolor|24bit)$ ]] && return 0
-    [[ "$TERM" =~ ^(xterm-kitty|alacritty|wezterm|foot|contour|rio) ]] && return 0
-    [[ "$TERM_PROGRAM" =~ ^(vscode|Hyper|Tabby|Warp)$ ]] && return 0
+    # Terminal.app поддерживает только 256 цветов, несмотря на TERM=xterm-256color
+    [[ "$TERM_PROGRAM" == "Apple_Terminal" ]] && return 1
+    [[ "$TERM" =~ ^(xterm-kitty|xterm-ghostty|alacritty|wezterm|foot|contour|rio) ]] && return 0
+    [[ "$TERM_PROGRAM" =~ ^(vscode|Hyper|Tabby|Warp|iTerm.app|ghostty|WezTerm)$ ]] && return 0
     [[ -n "$WT_SESSION" || "$TERM_PROGRAM" == "Windows Terminal" ]] && return 0
-    command -v tput &>/dev/null && [[ $(tput colors 2>/dev/null) -ge 256 ]] && return 0
+    # tput colors считает 256-цветные терминалы, но это не TrueColor
     return 1
 }
 
