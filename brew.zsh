@@ -24,20 +24,28 @@ setup_brew() {
 
     # Если brew найден - настраиваем
     if [[ -n "$brew_path" && -x "$brew_path" ]]; then
-        eval "$($brew_path shellenv)"
+        # brew shellenv запускает brew (~50 мс), а вывод у него постоянный,
+        # поэтому кэшируем его вместе с числом ядер. Кэш обновляется после обновления brew
+        local cache="${XDG_CACHE_HOME:-$HOME/.cache}/zshus/brew.zsh"
+        if [[ ! -s "$cache" || "$brew_path" -nt "$cache" ]]; then
+            local jobs=4
+            # Количество ядер для компиляции
+            if command -v nproc &>/dev/null; then
+                jobs=$(nproc)
+            elif [[ "$OSTYPE" == "darwin"* ]]; then
+                jobs=$(sysctl -n hw.ncpu)
+            fi
+            mkdir -p "${cache:h}"
+            {
+                "$brew_path" shellenv
+                print -r -- "export HOMEBREW_MAKE_JOBS=$jobs"
+            } >"$cache" 2>/dev/null
+        fi
+        source "$cache"
 
         # Оптимизация
         export HOMEBREW_NO_AUTO_UPDATE=1
         export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
-
-        # Количество ядер для компиляции
-        if command -v nproc &> /dev/null; then
-            export HOMEBREW_MAKE_JOBS=$(nproc)
-        elif [[ "$OSTYPE" == "darwin"* ]]; then
-            export HOMEBREW_MAKE_JOBS=$(sysctl -n hw.ncpu)
-        else
-            export HOMEBREW_MAKE_JOBS=4
-        fi
     fi
 }
 
