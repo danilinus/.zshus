@@ -19,4 +19,14 @@ alias usbind='$EDITOR "$HOME/.zshus/bindings.zsh"'
 alias ustime='time zsh -i -c exit'
 
 # Восстановить локальный репозиторий
-alias usreset='git -C $HOME/.zshus clean -fd && git -C $HOME/.zshus reset --hard HEAD && rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/zshus.status"'
+usreset() {
+    git -C "$HOME/.zshus" status --short
+    read -q "reply?Удалить все локальные изменения в ~/.zshus? [y/N] " || {
+        echo
+        return 1
+    }
+    echo
+    git -C "$HOME/.zshus" clean -fd &&
+        git -C "$HOME/.zshus" reset --hard HEAD &&
+        rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/zshus.status"
+}
