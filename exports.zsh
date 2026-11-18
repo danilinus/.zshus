@@ -1,7 +1,16 @@
 # Подавление предупреждений setlocal для Termux
-if [[ "$(uname -o)" != "Android" ]]; then
-    export LANG=ru_RU.UTF-8 2>/dev/null || export LANG=C.UTF-8
-    export LC_ALL=ru_RU.UTF-8 2>/dev/null || export LC_ALL=C.UTF-8
+if [[ "$(uname -o 2>/dev/null)" != "Android" ]]; then
+    # export всегда успешен, поэтому наличие локали проверяем через locale -a
+    if locale -a 2>/dev/null | grep -qiE '^ru_RU\.utf-?8$'; then
+        _zshus_lang="ru_RU.UTF-8"
+    elif locale -a 2>/dev/null | grep -qiE '^C\.utf-?8$'; then
+        _zshus_lang="C.UTF-8"
+    fi
+    if [[ -n "$_zshus_lang" ]]; then
+        export LANG="$_zshus_lang"
+        export LC_ALL="$_zshus_lang"
+    fi
+    unset _zshus_lang
 fi
 
 PATH="$PATH:$HOME/bin"
